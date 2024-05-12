@@ -1,3 +1,5 @@
+import { IMarketAPI, IUserAPI, IOrder, IOrderConfirmed, IProduct } from "../../types";
+
 export type ApiListResponse<Type> = {
     total: number,
     items: Type[]
@@ -19,24 +21,43 @@ export class Api {
         };
     }
 
-    protected handleResponse(response: Response): Promise<object> {
+    protected handleResponse(response: Response) {
         if (response.ok) return response.json();
         else return response.json()
             .then(data => Promise.reject(data.error ?? response.statusText));
     }
 
-    get(uri: string) {
+    get<T>(uri: string): Promise<T> {
         return fetch(this.baseUrl + uri, {
             ...this.options,
             method: 'GET'
         }).then(this.handleResponse);
     }
 
-    post(uri: string, data: object, method: ApiPostMethods = 'POST') {
+    post<T>(uri: string, data: object, method: ApiPostMethods = 'POST'): Promise<T> {
         return fetch(this.baseUrl + uri, {
             ...this.options,
             method,
             body: JSON.stringify(data)
         }).then(this.handleResponse);
+    }
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                        
+export class MarketAPI extends Api implements IMarketAPI {
+    async loadProductList(): Promise<IProduct[]> {
+        const result = await this.get<ApiListResponse<IProduct>>('/product');
+        return result.items;
+    }
+
+    async loadProduct(id: string): Promise<IProduct> {
+        const result = await this.get<ApiListResponse<IProduct>>(`/product/${id}`);
+        return result.items[0];
+    }
+}
+
+export class UserAPI extends Api implements IUserAPI {
+    async placeOrder(order: IOrder): Promise<IOrderConfirmed> {
+        const result = await this.post<ApiListResponse<IOrderConfirmed>>('/order', order);
+        return result.items[0];
     }
 }
