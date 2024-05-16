@@ -1,4 +1,5 @@
-import { IMarketAPI, IUserAPI, IOrder, IOrderConfirmed, IProduct } from "../../types";
+import { IMarketAPI, IUserAPI, IProduct } from "../../types";
+import { IConfirmedOrder, IOrder, Order } from "../Model/Order";
 
 export type ApiListResponse<Type> = {
     total: number,
@@ -22,7 +23,11 @@ export class Api {
     }
 
     protected handleResponse(response: Response) {
-        if (response.ok) return response.json();
+        if (response.ok) {
+            // console.log(response)
+            return response.json();
+        }
+            
         else return response.json()
             .then(data => Promise.reject(data.error ?? response.statusText));
     }
@@ -44,7 +49,7 @@ export class Api {
 }
                                                                                                                                                                                                                                                                                                                                                                                                                                         
 export class MarketAPI extends Api implements IMarketAPI {
-    async loadProductList(): Promise<IProduct[]> {
+    async loadProductList(): Promise<IProduct[]> { 
         const result = await this.get<ApiListResponse<IProduct>>('/product');
         return result.items;
     }
@@ -56,8 +61,8 @@ export class MarketAPI extends Api implements IMarketAPI {
 }
 
 export class UserAPI extends Api implements IUserAPI {
-    async placeOrder(order: IOrder): Promise<IOrderConfirmed> {
-        const result = await this.post<ApiListResponse<IOrderConfirmed>>('/order', order);
-        return result.items[0];
+    
+    placeOrder(order: IOrder): Promise<IConfirmedOrder> {
+        return this.post('/order', order);
     }
 }

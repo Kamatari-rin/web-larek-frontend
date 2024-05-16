@@ -1,17 +1,14 @@
-import { MarketAPI } from './components/base/api';
-import { CardView } from './components/base/CardView';
+import { MarketAPI, UserAPI } from './components/base/api';
 import { Presenter } from './components/base/Presenter';
-import { Product, ProductList } from './components/base/Product';
-import { ListView } from './components/base/ui';
 import './scss/styles.scss';
-import { IProduct, IProductDefault } from './types';
-import { templates } from './utils/constants';
+import { settings, templates } from './utils/constants';
 import { ensureElement } from './utils/utils';
 
 // https://larek-api.nomoreparties.co/content/weblarek/5_Dots.svg
 
-const api = new MarketAPI('https://larek-api.nomoreparties.co/api/weblarek');
+const marketAPI = new MarketAPI(settings.url);
+const userAPI = new UserAPI(settings.url)
 const contentElement = ensureElement<HTMLElement>('.page');
 
-const presenter = new Presenter(contentElement, api);
+const presenter = new Presenter(contentElement, marketAPI, userAPI);
 presenter.init();

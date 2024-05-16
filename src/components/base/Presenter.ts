@@ -1,36 +1,82 @@
-import { IProductDefault, IProductFull, IProductShort } from "../../types";
+import { IProductDefault } from "../../types";
 import { ensureElement } from "../../utils/utils";
-import { CardView, CardViewFull, CardViewShort } from "./CardView";
-import { ProductList } from "./Product";
-import { MarketAPI } from "./api";
-import { ListView } from "./ui";
+import { ProductList } from "../Model/Product";
+import { MarketAPI, UserAPI } from "./api";
+import { ListView } from "../View/View";
 import { templates } from "../../utils/constants";
 
 import { Popup, IPopup } from "./Popup";
-import { Cart, ICart } from "./Cart";
 import { EventEmitter } from "./events";
-import { InputAddressForm } from "./Form";
+import { AddressForm, Form } from "../View/FormView";
+import { BasketView } from "../View/BasketView";
+import { IOrder, Order } from "../Model/Order";
+import { CardViewFull, CardView } from "../View/CardView";
+import { SuccessView } from "../View/SuccessView";
+import { Basket, IBasket } from "../Model/Basket";
 
 export class Presenter extends EventEmitter {
     private galleryElement: HTMLElement
     private popup: IPopup;
+    private userOrder: IOrder;
     
     protected products: ProductList;
-    protected cart: ICart;
-
+    protected cart: IBasket;
+    protected basketView: BasketView;
+    protected addressForm: AddressForm;
+    protected tellAndEmailForm: Form;
     private openCartButton: HTMLButtonElement;
-    private modalCart: HTMLElement;
+    private successModal: SuccessView;
 
     constructor(protected page: HTMLElement,
-                protected marketAPI: MarketAPI) {
+                protected marketAPI: MarketAPI,
+                protected userAPI: UserAPI) {
             super();
             this.galleryElement = ensureElement<HTMLElement>('.gallery');
             this.popup = new Popup(ensureElement<HTMLElement>('#modal-container'));
             this.openCartButton = ensureElement<HTMLButtonElement>('.header__basket');
-            this.modalCart = ensureElement<HTMLElement>('.basket__list'); 
-
-            this.cart = new Cart();
+            
+            
+            this.cart = new Basket();
+            this.basketView = new BasketView(templates.basketTemplate, templates.cardBasketTemplate);        
             this.openCartButton.addEventListener('click', () => this.emit('clicToCart'));
+
+            this.addressForm = new AddressForm(templates.orderTemplate);
+            this.tellAndEmailForm = new Form(templates.contactsTemplate);
+            this.successModal = new SuccessView(templates.successTemplate);                
+
+            this.userOrder = new Order;
+    }
+
+    protected createUserOrder(data: {inputs: HTMLInputElement[]}) {
+        data.inputs.forEach(input => {
+            switch(input.name) {
+                case 'address': {
+                    this.userOrder.setAddress(input.value);
+                    break;
+                }
+                case 'email': {
+                    this.userOrder.setEmail(input.value);
+                    break;
+                }
+                case 'phone': {
+                    this.userOrder.setPhone(input.value);
+                }
+            }
+        });
+        this.userOrder.setOrder(this.cart.getCart());
+    }
+
+    protected placeUserOrder() {
+        this.userAPI.placeOrder(this.userOrder).then(result => {
+            this.popup.setContent(this.successModal.render(result));
+            this.popup.open();
+        });
+    }
+
+    protected handlerOrderIsComplete() {
+        this.cart.clearCart();
+        this.popup.close();
+        console.log(this.cart);
     }
 
     protected handlerPickUpProduct(itemID: {id: string}) {
@@ -41,50 +87,70 @@ export class Presenter extends EventEmitter {
         this.popup.open();
     }
 
-    protected handlerAddInCart(itemID: {id: string, element: CardViewFull<IProductFull>, data: IProductFull}) {
-        if(itemID.id) {
-            this.cart.add(this.products.getProductById(itemID.id));
-        }
+//////////////////////////////////////////////////////// Form Handlers //////////////////////////////////////////////////////
+
+    protected handlerCheckout() {
+        this.addressForm.clearValue();
+        this.popup.setContent(this.addressForm.render()); 
+        this.popup.open();
+    }
+
+    protected handlerFormAddress(data: {inputs: HTMLInputElement[]}) {
+        this.createUserOrder(data);
+        this.tellAndEmailForm.clearValue();
+        this.popup.setContent(this.tellAndEmailForm.render());
+        this.popup.open();
+    }
+
+    protected handlerFormTellAndEmail(data: {inputs: HTMLInputElement[]}) {
+        this.createUserOrder(data);
+        this.placeUserOrder();
+    }
+
+    protected handlerChangePayMethod(data: {method: string}) {
+        this.userOrder.setPayment(data.method);
+    }
+
+////////////////////////////////////////////////////// Basket Handlers //////////////////////////////////////////////////////    
+
+    protected handlerOpenCart() {
+        this.popup.setContent(this.basketView.render(this.cart.getCart(), this.handlerRemoveFromCart));              
+        this.popup.open();
+    }
+
+    protected handlerAddInCart(itemID: {id: string}) {
+        this.cart.add(this.products.getProductById(itemID.id));
     }
 
     protected handlerRemoveFromCart(itemID: {id: string}) {
-        console.log('delete');
-        
-    }
-
-    protected handlerCheckout(cartTotal: {total: string}) {
-        const inputAddressForm = new InputAddressForm(templates.orderTemplate);
-        this.popup.setContent(inputAddressForm.render());
-        this.popup.open();
+        this.cart.remove(itemID.id);
     }
 
     protected handlerUpdateCart() {
+        this.basketView.render(this.cart.getCart(), this.handlerRemoveFromCart);
         this.openCartButton.querySelector('.header__basket-counter').textContent = this.cart.length();
-        const test =new ListView<IProductShort>(CardViewShort, templates.cardBasketTemplate, this.modalCart, this.handlerRemoveFromCart.bind(this))
-            .render(
-                Array.from(this.cart.getCart())
-                        .map(item => item.toProductShort())
-            );
     }
 
-    protected handlerOpenCart() {
-        this.popup.setContent(this.page.querySelector('.basket').cloneNode(true) as HTMLElement);
-        this.popup.container.querySelector('.button').addEventListener('click', () => this.emit('checkout'));
-        this.on('checkout', this.handlerCheckout.bind(this));
-        this.on('delete', this.handlerRemoveFromCart);                   
-        this.popup.open();
-    }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     setEvents() {
-        
         this.on('clicToCart', () => this.handlerOpenCart());
         this.cart.on('cartUpdate', () => this.handlerUpdateCart());
+        this.basketView.on('delete', (data: {id: string}) => this.handlerRemoveFromCart(data));
+        this.basketView.on('checkout', () => this.handlerCheckout());
+
+
+        this.addressForm.on('pay', (data: {inputs: HTMLInputElement[]}) => this.handlerFormAddress(data));
+        this.addressForm.on('changePayMethod', (data: {method: string}) => this.handlerChangePayMethod(data));
+        this.tellAndEmailForm.on('pay', (data: {inputs: HTMLInputElement[]}) => this.handlerFormTellAndEmail(data));
+        this.successModal.on('order_complete', () => this.handlerOrderIsComplete());
     }
 
     init() {
         this.setEvents();
         this.products = new ProductList(this.marketAPI);
-        const catalogUI = new ListView<IProductDefault>(CardView, templates.cardCatalogTemplate, this.galleryElement, this.handlerPickUpProduct.bind(this));
+        const catalogUI = new ListView<IProductDefault>
+            (CardView, templates.cardCatalogTemplate, this.galleryElement, this.handlerPickUpProduct.bind(this));
         this.products.load().then(() => {
             catalogUI.render(this.products.items.map(card => card.toProductDefault()));
         });

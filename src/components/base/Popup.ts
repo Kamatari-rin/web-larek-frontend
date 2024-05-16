@@ -1,7 +1,6 @@
 import { ensureElement } from "../../utils/utils";
 
 export interface IPopup {
-
     container: HTMLElement;
     open(): void;
     close(): void;

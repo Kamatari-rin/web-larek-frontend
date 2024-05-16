@@ -1,5 +1,3 @@
-import { IEvent } from "../../types";
-import { cloneTemplate, ensureElement } from "../../utils/utils";
 
 export interface IView<T> {
     render(data: T): HTMLElement;

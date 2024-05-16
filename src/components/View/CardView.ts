@@ -1,16 +1,15 @@
-import { IProductDefault, IProductFull, IProductShort, IEvent } from "../../types";
+import { IProductDefault, IProductFull, IProductShort } from "../../types";
 import { settings } from "../../utils/constants";
 import { ensureElement } from "../../utils/utils";
-import { IView } from "../base/ui"
-import { EventEmitter, IEvents } from "./events";
-
+import { EventEmitter } from "../base/events";
+import { IView } from "./View";
 
 export class CardViewShort<T extends IProductShort> extends EventEmitter implements IView<T> {
     protected container: HTMLElement;
     protected _title: HTMLElement;
     protected _price: HTMLElement;
 
-    constructor(template: HTMLTemplateElement, protected event: Function) {
+    constructor(template: HTMLTemplateElement) {
         super();
         this.container = template.content.querySelector('.card').cloneNode(true) as HTMLElement;
         this._title = ensureElement<HTMLElement>('.card__title', this.container);
@@ -27,21 +26,11 @@ export class CardViewShort<T extends IProductShort> extends EventEmitter impleme
         return this;
     }
 
-    protected _setEvent<T extends IProductShort>(data: T): void {
-
-        const deleteButton = this.container.querySelector('.basket__item-delete');
-        // Не могу понять почему я не могу подписаться на событие кнопка находится, но addEventListener не срабатывает. 
-        // При просмотрел в браузере во вкладке Event Listeners ничего нет. 
-        deleteButton.addEventListener('click', () => this.emit('delete', {id: data.id}))
-    }
-
     render(data: T): HTMLElement {
         if(this.container) {
             this.container.setAttribute('id', data.id);
             this._setCardTitle(data)
                 ._setPrice(data)
-                ._setEvent(data)
-            this.on('delete', this.event.bind(this));
         }
         return this.container;
     }
@@ -53,7 +42,7 @@ export class CardView<T extends IProductDefault> extends CardViewShort<T> implem
     private CardCategory: Map<string, string> = settings.CardCategory;
 
     constructor(template: HTMLTemplateElement, protected event: Function) {
-        super(template, event);
+        super(template);
         this._category = ensureElement<HTMLElement>('.card__category', this.container);
         this._image = ensureElement<HTMLImageElement>('.card__image', this.container);
     }
@@ -71,10 +60,6 @@ export class CardView<T extends IProductDefault> extends CardViewShort<T> implem
             this._image.alt = data.title;
         }    
         return this;
-    }
-
-    protected _setEvent<T extends IProductShort>(data: T): void {
-       
     }
 
     render(data: T): HTMLElement {
@@ -107,6 +92,7 @@ export class CardViewFull<T extends IProductFull> extends CardView<T> implements
 
     protected _setEventt<T extends IProductFull>(data: T) {
         this._button.addEventListener('click', () => this.emit('add', {id: data.id}));
+        this.on('add', this.event.bind(this));
     }
 
     render(data: T): HTMLElement {
@@ -115,9 +101,7 @@ export class CardViewFull<T extends IProductFull> extends CardView<T> implements
             ._setDescription(data)
             ._setImage(data)
             ._setPrice(data)
-            ._setEventt(data)
-
-        this.on('add', this.event.bind(this));
+            ._setEventt(data);
         return this.container;
     }
 }

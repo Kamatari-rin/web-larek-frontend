@@ -1,14 +1,15 @@
 import { IProduct } from "../../types";
-import { EventEmitter } from "./events";
+import { EventEmitter } from "../base/events";
 
-export interface ICart extends EventEmitter {
+export interface IBasket extends EventEmitter {
     add(product: IProduct): void;
     remove(productID: string): void;
     length(): string;
     getCart(): Set<IProduct>;
+    clearCart(): void;
 }
 
-export class Cart extends EventEmitter implements ICart {
+export class Basket extends EventEmitter implements IBasket {
     private cart: Set<IProduct>;
 
     constructor(){
@@ -23,11 +24,12 @@ export class Cart extends EventEmitter implements ICart {
 
         }
     }
+
     remove(productID: string): void {
-        if(productID) {
-            this.cart.forEach(item => item.id === productID && this.cart.delete(item));
-            this.emit('cartUpdate');
-        }
+        this.cart.forEach(item => {
+                if (item.id === productID) this.cart.delete(item)
+        }); 
+        this.emit('cartUpdate');
     }
 
     length(): string {
@@ -36,5 +38,9 @@ export class Cart extends EventEmitter implements ICart {
 
     getCart (): Set<IProduct>{
         return this.cart;
+    }
+    clearCart(): void {
+        this.cart.clear();
+        this.emit('cartUpdate');
     }
 }

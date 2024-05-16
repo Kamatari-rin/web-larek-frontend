@@ -1,3 +1,4 @@
+import { IConfirmedOrder, IOrder } from "../components/Model/Order";
 
 export interface IProduct {
     id: string;
@@ -18,21 +19,7 @@ export interface IMarketAPI {
 }
 
 export interface IUserAPI {
-    placeOrder(order: IOrder): Promise<IOrderConfirmed>;
-}
-
-export interface IOrder {
-    payment: string;
-    email: string;
-    phone: string;
-    address: string;
-    total: number;
-    items: string[];
-}
-
-export interface IOrderConfirmed {
-    id: string;
-    total: number;
+    placeOrder(order: IOrder): Promise<IConfirmedOrder>;
 }
 
 export interface IProductShort {
@@ -58,14 +45,3 @@ export interface IProductFull extends IProductDefault {
     price: string;
 }
 
-
-
-export interface ICardUITemplate {
-    
-}
-
-export interface IEvent {
-    name: string;
-    type: string;
-    event: Function;
-}
