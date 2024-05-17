@@ -1,7 +1,7 @@
 import { IProductDefault, IProductFull, IProductShort, IView } from "../../types";
 import { settings } from "../../utils/constants";
 import { ensureElement } from "../../utils/utils";
-import { EventEmitter } from "../base/Events";
+import { EventEmitter } from "../Base/Events";
 
 export class CardViewShort<T extends IProductShort> extends EventEmitter implements IView<T> {
     protected container: HTMLElement;

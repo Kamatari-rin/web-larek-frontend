@@ -4,7 +4,7 @@ import { ProductList } from "../Model/Product";
 import { ListView } from "../View/View";
 import { templates } from "../../utils/constants";
 
-import { EventEmitter } from "../base/Events";
+import { EventEmitter } from "../Base/Events";
 import { AddressForm, Form } from "../View/FormView";
 import { BasketView } from "../View/BasketView";
 import { CardViewFull, CardView } from "../View/CardView";

@@ -1,6 +1,6 @@
 import { IPopup } from "../../types";
 import { ensureElement } from "../../utils/utils";
-import { EventEmitter } from "../base/Events";
+import { EventEmitter } from "../Base/Events";
 
 export class Popup extends EventEmitter implements IPopup {
     protected closeButton: HTMLButtonElement;

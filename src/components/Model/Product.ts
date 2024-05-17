@@ -1,6 +1,6 @@
 import { IMarketAPI, IProduct, IProductDefault, IProductFull, IProductShort } from "../../types";
 import { settings } from "../../utils/constants";
-import { EventEmitter } from "../base/Events";
+import { EventEmitter } from "../Base/Events";
 
 export class Product implements IProduct {
     id: string;

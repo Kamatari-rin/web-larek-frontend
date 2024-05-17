@@ -1,5 +1,5 @@
 import { IMarketAPI, IProduct } from "../../types";
-import { Api, ApiListResponse } from "../base/API";
+import { Api, ApiListResponse } from "../Base/API";
 
 export class MarketAPI extends Api implements IMarketAPI {
     async loadProductList(): Promise<IProduct[]> { 

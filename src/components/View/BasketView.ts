@@ -1,6 +1,6 @@
 import { IProduct, IProductShort } from "../../types";
 import { ensureElement } from "../../utils/utils";
-import { EventEmitter } from "../base/Events";
+import { EventEmitter } from "../Base/Events";
 import { CardViewShort } from "./CardView";
 import { ListView } from "./View";
 

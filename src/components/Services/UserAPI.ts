@@ -1,5 +1,5 @@
 import { IConfirmedOrder, IOrder, IUserAPI } from "../../types";
-import { Api } from "../base/API";
+import { Api } from "../Base/API";
 
 export class UserAPI extends Api implements IUserAPI {
     

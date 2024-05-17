@@ -1,6 +1,6 @@
 import { IForm } from "../../types";
 import { ensureAllElements, ensureElement } from "../../utils/utils";
-import { EventEmitter } from "../base/Events";
+import { EventEmitter } from "../Base/Events";
 
 export class Form extends EventEmitter implements IForm {
     protected formElement: HTMLFormElement;
