@@ -1,13 +1,12 @@
-import { MarketAPI, UserAPI } from './components/base/api';
-import { Presenter } from './components/base/Presenter';
+import { MarketAPI } from './components/Services/MarketAPI';
+import { UserAPI } from './components/Services/UserAPI';
+import { Presenter } from './components/Services/Presenter';
 import './scss/styles.scss';
-import { settings, templates } from './utils/constants';
+import { settings } from './utils/constants';
 import { ensureElement } from './utils/utils';
 
-// https://larek-api.nomoreparties.co/content/weblarek/5_Dots.svg
-
-const marketAPI = new MarketAPI(settings.url);
-const userAPI = new UserAPI(settings.url)
+const marketAPI = new MarketAPI(settings.API_URL);
+const userAPI = new UserAPI(settings.API_URL)
 const contentElement = ensureElement<HTMLElement>('.page');
 
 const presenter = new Presenter(contentElement, marketAPI, userAPI);

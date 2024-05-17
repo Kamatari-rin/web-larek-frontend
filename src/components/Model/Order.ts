@@ -1,17 +1,4 @@
-import { IProduct } from "../../types";
-
-export interface IOrder {
-    setPayment(value: string): void;
-    setEmail(value: string): void;
-    setPhone(value: string): void;
-    setAddress(value: string): void;
-    setOrder(value: Set<IProduct>): void;
-}
-
-export interface IConfirmedOrder {
-    id: string;
-    total: number;
-}
+import { IConfirmedOrder, IOrder, IProduct } from "../../types";
 
 export class Order implements IOrder {
     private payment: string;
@@ -43,9 +30,9 @@ export class Order implements IOrder {
         if(value) this.total = value;
     }
 
-    setOrder(order: Set<IProduct>): void {
-        this.items = Array.from(order).map(product => product.id);
-        this.total = Array.from(order).reduce((total, item) => total + item.price, 0);
+    setOrder(order: IProduct[]): void {
+        this.items = order.map(product => product.id);
+        this.total = order.reduce((total, item) => total + item.price, 0);
     }
 }
 

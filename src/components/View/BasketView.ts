@@ -1,9 +1,8 @@
 import { IProduct, IProductShort } from "../../types";
 import { ensureElement } from "../../utils/utils";
-import { EventEmitter } from "../base/events";
+import { EventEmitter } from "../base/Events";
 import { CardViewShort } from "./CardView";
 import { ListView } from "./View";
-
 
 export class BasketView extends EventEmitter {
     
@@ -21,9 +20,9 @@ export class BasketView extends EventEmitter {
 
     }
 
-    protected _renderProductList(data: Set<IProduct>, deleteProductEvent: Function) {
+    protected _renderProductList(data: IProduct[], deleteProductEvent: Function) {
        new ListView<IProductShort>(CardViewShort, this.productListTemplate, this.productListView, deleteProductEvent)
-                .render(Array.from(data).map(item => item.toProductShort()));
+                .render(data.map(item => item.toProductShort()));
 
         this.productListView.querySelectorAll('.card').forEach((item, i = 0) => {
             item.querySelector('.basket__item-index').textContent = `${++i}`;
@@ -31,11 +30,11 @@ export class BasketView extends EventEmitter {
         });                                                                         
     }
 
-    protected _setBasketTotal(products: Set<IProduct>) {
-        this.basketTotal.textContent = Array.from(products).reduce((summ, item) => summ + item.price, 0).toString()
+    protected _setBasketTotal(products: IProduct[]) {
+        this.basketTotal.textContent = products.reduce((summ, item) => summ + item.price, 0).toString() + ' синапсов'
     }
 
-    render(products: Set<IProduct>, deleteProductEvent: Function): HTMLElement {
+    render(products: IProduct[], deleteProductEvent: Function): HTMLElement {
         this._renderProductList(products, deleteProductEvent);
         this._setBasketTotal(products);
         this.checkoutButton.addEventListener('click', () => this.emit('checkout'));

@@ -1,20 +1,13 @@
+import { IForm } from "../../types";
 import { ensureAllElements, ensureElement } from "../../utils/utils";
-import { EventEmitter } from "../base/events";
-
-export interface IForm {
-    clearValue(): void;
-    setButtonText(data: string): void;
-    render(): HTMLFormElement;
-}
-
-export interface IFormConstructor {
-    new (formTemplate: HTMLTemplateElement): IForm;
-}
+import { EventEmitter } from "../base/Events";
 
 export class Form extends EventEmitter implements IForm {
     protected formElement: HTMLFormElement;
     public inputFields: HTMLInputElement[];
     protected submitButton: HTMLButtonElement;
+    protected isFormValid: boolean;
+    protected inputFieldCount: number;
 
     constructor(formTemplate: HTMLTemplateElement) {
         super();
@@ -28,10 +21,13 @@ export class Form extends EventEmitter implements IForm {
             this.emit('pay', {inputs: this.getInputs()});
         });
 
+        this.inputFieldCount = 0;
+
         this.inputFields.forEach(input => {
             input.addEventListener('input', () => {
-                const isValid = input.value.length > 3;
-                this.setSubmitButtonState(isValid) 
+                this.isFormValid = input.value.length > 3;
+                this.inputFieldCount++;
+                this.setSubmitButtonState(); 
             });
         })
     }
@@ -40,8 +36,9 @@ export class Form extends EventEmitter implements IForm {
         return this.inputFields;
     }
     
-    setSubmitButtonState(isFormValid: boolean): void {
-        isFormValid ? this.submitButton.removeAttribute('disabled') : this.submitButton.setAttribute('disabled', 'true');
+    setSubmitButtonState(): void {
+        this.isFormValid && this.inputFieldCount == this.inputFields.length ? 
+            this.submitButton.removeAttribute('disabled') : this.submitButton.setAttribute('disabled', 'true');
     }
 
     clearValue(): void {
@@ -60,6 +57,7 @@ export class Form extends EventEmitter implements IForm {
 export class AddressForm extends Form {
     protected payOnlainButton: HTMLButtonElement;
     protected payCashButton: HTMLButtonElement;
+    private isPayMethodSelect: boolean;
 
     constructor(template: HTMLTemplateElement) {
         super(template);
@@ -67,8 +65,37 @@ export class AddressForm extends Form {
             if(button.name === 'card') this.payOnlainButton = button;
             if(button.name === 'cash') this.payCashButton = button;
         });
+        this.isPayMethodSelect = false;
 
-        this.payOnlainButton.addEventListener('click', () => this.emit('changePayMethod', {method: 'onlain'}));
-        this.payCashButton.addEventListener('click', () => this.emit('changePayMethod', {method: 'cash'}));
+        this.payOnlainButton.addEventListener('click', () => {
+            this.tougleClassPayMethodButton('onlain');
+            this.isPayMethodSelect = true;
+            this.emit('changePayMethod', {method: 'onlain'});
+            this.setSubmitButtonState();
+        });
+        this.payCashButton.addEventListener('click', () => {
+            this.tougleClassPayMethodButton('cash');
+            this.isPayMethodSelect = true;
+            this.emit('changePayMethod', {method: 'cash'});
+            this.setSubmitButtonState();
+        });
+    }
+
+    setSubmitButtonState(): void {
+        this.isFormValid && this.inputFieldCount == this.inputFields.length && this.isPayMethodSelect ? 
+            this.submitButton.removeAttribute('disabled') : this.submitButton.setAttribute('disabled', 'true');
+    }
+
+    tougleClassPayMethodButton(button: string) {
+        if(button === 'onlain') {
+            this.payOnlainButton.classList.add('button_alt-active');
+            this.payCashButton.classList.remove('button_alt-active');
+        }
+
+        if (button === 'cash') {
+            this.payOnlainButton.classList.remove('button_alt-active');
+            this.payCashButton.classList.add('button_alt-active');
+        }
+        
     }
 }

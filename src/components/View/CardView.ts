@@ -1,8 +1,7 @@
-import { IProductDefault, IProductFull, IProductShort } from "../../types";
+import { IProductDefault, IProductFull, IProductShort, IView } from "../../types";
 import { settings } from "../../utils/constants";
 import { ensureElement } from "../../utils/utils";
-import { EventEmitter } from "../base/events";
-import { IView } from "./View";
+import { EventEmitter } from "../base/Events";
 
 export class CardViewShort<T extends IProductShort> extends EventEmitter implements IView<T> {
     protected container: HTMLElement;
@@ -87,21 +86,30 @@ export class CardViewFull<T extends IProductFull> extends CardView<T> implements
     
     protected _setDescription<T extends IProductFull>(data: T) {
         if(this._description) this._description.textContent = data.description;
+        if(data.price !== 'Бесценно') this.container.querySelector('.card__price').textContent = data.price + ' синапсов'
         return this;
     }
 
-    protected _setEventt<T extends IProductFull>(data: T) {
-        this._button.addEventListener('click', () => this.emit('add', {id: data.id}));
-        this.on('add', this.event.bind(this));
+    protected _setEvent<T extends IProductFull>(data: T) {
+        if (data.productIsBasket) {
+            this._button.setAttribute('disabled', 'true');
+            this._button.textContent = "Товар уже в корзине"
+        } else if (data.price === 'Бесценно'){
+            this._button.setAttribute('disabled', 'true');
+            this._button.textContent = "Товар нельзя купить"
+        } else {
+            this._button.addEventListener('click', () => this.emit('add', {data: data}));
+            this.on('add', this.event.bind(this));
+        }
     }
 
     render(data: T): HTMLElement {
         this._setCardTitle(data)
+            ._setPrice(data)
             ._setCategory(data)
             ._setDescription(data)
             ._setImage(data)
-            ._setPrice(data)
-            ._setEventt(data);
+            ._setEvent(data);
         return this.container;
     }
 }

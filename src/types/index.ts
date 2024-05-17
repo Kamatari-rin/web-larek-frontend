@@ -1,4 +1,17 @@
-import { IConfirmedOrder, IOrder } from "../components/Model/Order";
+import { EventEmitter } from "../components/base/Events";
+
+export type EventName = string | RegExp;
+export type Subscriber = Function;
+export type EmitterEvent = {
+    eventName: string,
+    data: unknown
+};
+
+export interface IEvents {
+    on<T extends object>(event: EventName, callback: (data: T) => void): void;
+    emit<T extends object>(event: string, data?: T): void;
+    trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
+}
 
 export interface IProduct {
     id: string;
@@ -7,6 +20,7 @@ export interface IProduct {
     title: string;
     category: string;
     price: number | null;
+    productIsBasket: boolean;
 
     toProductDefault(): IProductDefault;
     toProductFull(): IProductFull;
@@ -26,6 +40,7 @@ export interface IProductShort {
     id: string;
     title: string;
     price: string;
+    productIsBasket: boolean;
 }
 
 export interface IProductDefault extends IProductShort {
@@ -34,6 +49,7 @@ export interface IProductDefault extends IProductShort {
     title: string;
     category: string;
     price: string;
+    productIsBasket: boolean;
 }
 
 export interface IProductFull extends IProductDefault {
@@ -43,5 +59,43 @@ export interface IProductFull extends IProductDefault {
     title: string;
     category: string;
     price: string;
+    productIsBasket: boolean;
 }
 
+export interface IOrder {
+    setPayment(value: string): void;
+    setEmail(value: string): void;
+    setPhone(value: string): void;
+    setAddress(value: string): void;
+    setOrder(value: IProduct[]): void;
+}
+
+export interface IConfirmedOrder {
+    id: string;
+    total: number;
+}
+
+export interface IForm {
+    clearValue(): void;
+    setButtonText(data: string): void;
+    render(): HTMLFormElement;
+}
+
+export interface IFormConstructor {
+    new (formTemplate: HTMLTemplateElement): IForm;
+}
+
+export interface IPopup extends EventEmitter {
+    container: HTMLElement;
+    open(): void;
+    close(): void;
+    setContent(value: HTMLElement): void; 
+}
+
+export interface IView<T> {
+    render(data: T): HTMLElement;
+}
+
+export interface IViewConstructor<T> {
+    new(template: HTMLElement, event: Function): IView<T>;
+}

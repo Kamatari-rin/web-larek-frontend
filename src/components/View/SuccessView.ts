@@ -1,7 +1,6 @@
+import { IConfirmedOrder, IView } from "../../types";
 import { ensureElement } from "../../utils/utils";
-import { IConfirmedOrder } from "../Model/Order";
-import { IView } from "../View/View";
-import { EventEmitter } from "../base/events";
+import { EventEmitter } from "../base/Events";
 
 export class SuccessView extends EventEmitter implements IView<IConfirmedOrder> {
     protected container: HTMLElement;

@@ -1,18 +1,13 @@
+import { IPopup } from "../../types";
 import { ensureElement } from "../../utils/utils";
+import { EventEmitter } from "../base/Events";
 
-export interface IPopup {
-    container: HTMLElement;
-    open(): void;
-    close(): void;
-    setContent(value: HTMLElement): void; 
-}
-
-export class Popup implements IPopup {
+export class Popup extends EventEmitter implements IPopup {
     protected closeButton: HTMLButtonElement;
     protected content: HTMLElement;
 
     constructor(public container: HTMLElement) {
-
+        super();
         this.closeButton = ensureElement<HTMLButtonElement>('.modal__close', container);
         this.content = ensureElement<HTMLElement>('.modal__content', container);
 
@@ -28,9 +23,11 @@ export class Popup implements IPopup {
     
     open(): void {
         this.container.classList.add('modal_active');
+        this.emit('popupOpened');
     }
     close(): void {
         this.container.classList.remove('modal_active');
         this.content = null;
+        this.emit('popupClosed');
     }
 }

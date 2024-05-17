@@ -10,7 +10,8 @@ export const settings = {
         ["дополнительное", "card__category_additional"],
         ["кнопка", "card__category_button"],
     ]),
-    url: 'https://larek-api.nomoreparties.co/api/weblarek'
+    API_URL: 'https://larek-api.nomoreparties.co/api/weblarek',
+    CDN_URL: `https://larek-api.nomoreparties.co/content/weblarek`
 
 };
 

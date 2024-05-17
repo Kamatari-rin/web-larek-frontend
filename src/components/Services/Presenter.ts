@@ -1,26 +1,27 @@
-import { IProductDefault } from "../../types";
+import { IOrder, IPopup, IProductDefault, IProductFull } from "../../types";
 import { ensureElement } from "../../utils/utils";
 import { ProductList } from "../Model/Product";
-import { MarketAPI, UserAPI } from "./api";
 import { ListView } from "../View/View";
 import { templates } from "../../utils/constants";
 
-import { Popup, IPopup } from "./Popup";
-import { EventEmitter } from "./events";
+import { EventEmitter } from "../base/Events";
 import { AddressForm, Form } from "../View/FormView";
 import { BasketView } from "../View/BasketView";
-import { IOrder, Order } from "../Model/Order";
 import { CardViewFull, CardView } from "../View/CardView";
 import { SuccessView } from "../View/SuccessView";
-import { Basket, IBasket } from "../Model/Basket";
+import { MarketAPI } from "./MarketAPI";
+import { UserAPI } from "./UserAPI";
+import { Order } from "../Model/Order";
+import { Popup } from "./Popup";
 
 export class Presenter extends EventEmitter {
-    private galleryElement: HTMLElement
+    private galleryElement: HTMLElement;
+    private productFullModal: HTMLElement;
     private popup: IPopup;
     private userOrder: IOrder;
     
     protected products: ProductList;
-    protected cart: IBasket;
+
     protected basketView: BasketView;
     protected addressForm: AddressForm;
     protected tellAndEmailForm: Form;
@@ -36,15 +37,19 @@ export class Presenter extends EventEmitter {
             this.openCartButton = ensureElement<HTMLButtonElement>('.header__basket');
             
             
-            this.cart = new Basket();
             this.basketView = new BasketView(templates.basketTemplate, templates.cardBasketTemplate);        
             this.openCartButton.addEventListener('click', () => this.emit('clicToCart'));
 
             this.addressForm = new AddressForm(templates.orderTemplate);
             this.tellAndEmailForm = new Form(templates.contactsTemplate);
-            this.successModal = new SuccessView(templates.successTemplate);                
+            this.successModal = new SuccessView(templates.successTemplate);               
 
             this.userOrder = new Order;
+    }
+
+    protected handlerLockPage(value: boolean) {
+        if (value) this.page.querySelector('.page__wrapper').classList.add('class', 'page__wrapper_locked');
+        else this.page.querySelector('.page__wrapper').classList.remove('class', 'page__wrapper_locked');
     }
 
     protected createUserOrder(data: {inputs: HTMLInputElement[]}) {
@@ -63,7 +68,7 @@ export class Presenter extends EventEmitter {
                 }
             }
         });
-        this.userOrder.setOrder(this.cart.getCart());
+        this.userOrder.setOrder(this.products.getProductsInBasket());
     }
 
     protected placeUserOrder() {
@@ -73,17 +78,19 @@ export class Presenter extends EventEmitter {
         });
     }
 
+    protected renderCardViewFull(product: {data: IProductFull}) {
+        this.productFullModal = new CardViewFull(templates.cardPreviewTemplate, this.handlerAddInCart.bind(this))
+                .render(this.products.getProductById(product.data.id).toProductFull());
+    }
+
     protected handlerOrderIsComplete() {
-        this.cart.clearCart();
+        this.products.clearUserCart();
         this.popup.close();
-        console.log(this.cart);
     }
 
     protected handlerPickUpProduct(itemID: {id: string}) {
-        const openedProduct = new CardViewFull(templates.cardPreviewTemplate, this.handlerAddInCart.bind(this))
-                .render(this.products.getProductById(itemID.id).toProductFull());
-        this.popup.container.querySelector('.modal__content')
-                .replaceChildren(openedProduct);
+        this.renderCardViewFull({data: this.products.getProductById(itemID.id).toProductFull()})
+        this.popup.setContent(this.productFullModal);
         this.popup.open();
     }
 
@@ -114,28 +121,31 @@ export class Presenter extends EventEmitter {
 ////////////////////////////////////////////////////// Basket Handlers //////////////////////////////////////////////////////    
 
     protected handlerOpenCart() {
-        this.popup.setContent(this.basketView.render(this.cart.getCart(), this.handlerRemoveFromCart));              
+        this.popup.setContent(this.basketView.render(this.products.getProductsInBasket(), this.handlerRemoveFromCart));              
         this.popup.open();
     }
 
-    protected handlerAddInCart(itemID: {id: string}) {
-        this.cart.add(this.products.getProductById(itemID.id));
+    protected handlerAddInCart(product: {data: IProductFull}) {
+        this.products.setProductIsBasket(product.data.id, true);
+        this.renderCardViewFull(product)
+        this.popup.setContent(this.productFullModal)
+        this.popup.open()
     }
 
     protected handlerRemoveFromCart(itemID: {id: string}) {
-        this.cart.remove(itemID.id);
+        this.products.setProductIsBasket(itemID.id, false);
     }
 
     protected handlerUpdateCart() {
-        this.basketView.render(this.cart.getCart(), this.handlerRemoveFromCart);
-        this.openCartButton.querySelector('.header__basket-counter').textContent = this.cart.length();
+        this.basketView.render(this.products.getProductsInBasket(), this.handlerRemoveFromCart);
+        this.openCartButton.querySelector('.header__basket-counter').textContent = this.products.getBasketSize();
     }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     setEvents() {
         this.on('clicToCart', () => this.handlerOpenCart());
-        this.cart.on('cartUpdate', () => this.handlerUpdateCart());
+        this.products.on('basketUpdate', () => this.handlerUpdateCart());
         this.basketView.on('delete', (data: {id: string}) => this.handlerRemoveFromCart(data));
         this.basketView.on('checkout', () => this.handlerCheckout());
 
@@ -144,15 +154,20 @@ export class Presenter extends EventEmitter {
         this.addressForm.on('changePayMethod', (data: {method: string}) => this.handlerChangePayMethod(data));
         this.tellAndEmailForm.on('pay', (data: {inputs: HTMLInputElement[]}) => this.handlerFormTellAndEmail(data));
         this.successModal.on('order_complete', () => this.handlerOrderIsComplete());
+
+
+        this.popup.on('popupOpened', () => this.handlerLockPage(true));
+        this.popup.on('popupClosed', () => this.handlerLockPage(false));
     }
 
     init() {
-        this.setEvents();
+        
         this.products = new ProductList(this.marketAPI);
         const catalogUI = new ListView<IProductDefault>
             (CardView, templates.cardCatalogTemplate, this.galleryElement, this.handlerPickUpProduct.bind(this));
         this.products.load().then(() => {
             catalogUI.render(this.products.items.map(card => card.toProductDefault()));
         });
+        this.setEvents();
     }            
 }
