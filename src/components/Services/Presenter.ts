@@ -12,7 +12,7 @@ import { SuccessView } from "../View/SuccessView";
 import { MarketAPI } from "./MarketAPI";
 import { UserAPI } from "./UserAPI";
 import { Order } from "../Model/Order";
-import { Popup } from "./Popup";
+import { Popup } from "../View/Popup";
 
 export class Presenter extends EventEmitter {
     private galleryElement: HTMLElement;
