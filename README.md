@@ -290,3 +290,21 @@ loadProduct(id: string): Promise<IProduct> - делает запрос на за
 ---------------------------------------------------------------------------------------------------------------------------------------- 
 ## EventEmitter
 Класс EventEmitter implements IEvents - брокер событий
+
+
+### События
+
+handlerLockPage(value: boolean) - блокирует прокрутку
+handlerLockPage(value: boolean) - очищает корзину после успешного выполнения заказа
+handlerPickUpProduct(itemID: {id: string}) -Запускает рендер полной карточки продукта и открывает попап с ней.
+
+handlerCheckout() - отчищает форму и устанавливает форму для заполнения адресса и открывает попап с ней
+handlerFormAddress(data: {inputs: HTMLInputElement[]}) - заносит ранее введенные данные пользователя в Order и открывает вторую форму в попапе.
+handlerChangePayMethod(data: {method: string}) - Устанавливает метод оплаты в заказе пользователя.
+
+handlerOpenCart() - Открывает модальное окно с корзиной
+
+handlerAddInCart(product: {data: IProductFull}) - Добавляет товару свойства нахаождения в корзине
+handlerRemoveFromCart(itemID: {id: string}) - Удаляет у товара свойство нахождение в корзине
+
+handlerUpdateCart()  - обновляет корзину

@@ -1,18 +1,18 @@
-import { IOrder, IPopup, IProductDefault, IProductFull } from "../../types";
-import { ensureElement } from "../../utils/utils";
-import { ProductList } from "../Model/Product";
-import { ListView } from "../View/View";
+import { IPopup, IOrder, IProductFull, IProductDefault } from "../../types";
 import { templates } from "../../utils/constants";
-
+import { ensureElement } from "../../utils/utils";
 import { EventEmitter } from "../Base/Events";
-import { AddressForm, Form } from "../View/FormView";
+import { Order } from "../Model/Order";
+import { ProductList } from "../Model/Product";
 import { BasketView } from "../View/BasketView";
 import { CardViewFull, CardView } from "../View/CardView";
+import { AddressForm, Form } from "../View/FormView";
+import { Popup } from "../View/Popup";
 import { SuccessView } from "../View/SuccessView";
+import { ListView } from "../View/View";
 import { MarketAPI } from "./MarketAPI";
 import { UserAPI } from "./UserAPI";
-import { Order } from "../Model/Order";
-import { Popup } from "../View/Popup";
+
 
 export class Presenter extends EventEmitter {
     private galleryElement: HTMLElement;
