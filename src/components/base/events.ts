@@ -2,7 +2,6 @@
 // Хорошая практика даже простые типы выносить в алиасы
 // Зато когда захотите поменять это достаточно сделать в одном месте
 
-
 import { IEvents, EventName, Subscriber, EmitterEvent } from "../../types";
 
 /**
@@ -38,6 +37,7 @@ export class EventEmitter implements IEvents {
             }
         }
     }
+    
 
     /**
      * Инициировать событие с данными
