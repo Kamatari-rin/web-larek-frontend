@@ -53,9 +53,6 @@ export class EventEmitter implements IEvents {
         this.on("*", callback);
     }
 
-    /**
-     * Сбросить все обработчики
-     */
     offAll() {
         this._events = new Map<string, Set<Subscriber>>();
     }
