@@ -29,8 +29,8 @@ export const validateErrors = {
     payMethodNotSelectedError: 'Не выбран способ оплаты!',
     fildNotFillError: 'Заполните все поля',
     addressIsShortError: 'Поле Адрес должно содержать минимум 10 символов!',
-    phoneIsWrongError: 'Не верный номер телефона',
-    emailIsWrongError: 'Не верный формат email',
+    phoneIsWrongError: 'Неверный номер телефона',
+    emailIsWrongError: 'Неверный формат email',
 }
 
 export const regexValidate = {
