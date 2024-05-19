@@ -25,3 +25,15 @@ export const templates = {
     contactsTemplate: ensureElement<HTMLTemplateElement>('#contacts')
 }
 
+export const validateErrors = {
+    payMethodNotSelectedError: 'Не выбран способ оплаты!',
+    fildNotFillError: 'Заполните все поля',
+    addressIsShortError: 'Поле Адрес должно содержать минимум 10 символов!',
+    phoneIsWrongError: 'Не верный номер телефона',
+    emailIsWrongError: 'Не верный формат email',
+}
+
+export const regexValidate = {
+    EMAIL_REGEXP: /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/iu,
+    PHONE_REGEXP: /\+7\s?\(?\d{3}\)?\s?\d{3}-?\d{2}-?\d{2}/
+}

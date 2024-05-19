@@ -34,10 +34,16 @@ export class BasketView extends EventEmitter {
         this.basketTotal.textContent = products.reduce((summ, item) => summ + item.price, 0).toString() + ' синапсов'
     }
 
+    protected _checkoutValidation(basketSize: number) {
+        basketSize <= 0 ? this.checkoutButton.setAttribute('disabled', 'true') : this.checkoutButton.removeAttribute('disabled');
+    }
+
     render(products: IProduct[], deleteProductEvent: Function): HTMLElement {
         this._renderProductList(products, deleteProductEvent);
-        this._setBasketTotal(products);
         this.checkoutButton.addEventListener('click', () => this.emit('checkout'));
+        this.checkoutButton.removeAttribute('disabled');
+        this._setBasketTotal(products);
+        this._checkoutValidation(products.length);
         return this.basketElement;
     }
 }

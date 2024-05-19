@@ -6,7 +6,7 @@ import { Order } from "../Model/Order";
 import { ProductList } from "../Model/Product";
 import { BasketView } from "../View/BasketView";
 import { CardViewFull, CardView } from "../View/CardView";
-import { AddressForm, Form } from "../View/FormView";
+import { AddressForm, Form, TellAndEmailForm } from "../View/FormView";
 import { Popup } from "../View/Popup";
 import { SuccessView } from "../View/SuccessView";
 import { ListView } from "../View/View";
@@ -41,7 +41,7 @@ export class Presenter extends EventEmitter {
             this.openCartButton.addEventListener('click', () => this.emit('clicToCart'));
 
             this.addressForm = new AddressForm(templates.orderTemplate);
-            this.tellAndEmailForm = new Form(templates.contactsTemplate);
+            this.tellAndEmailForm = new TellAndEmailForm(templates.contactsTemplate);
             this.successModal = new SuccessView(templates.successTemplate);               
 
             this.userOrder = new Order;
@@ -49,7 +49,11 @@ export class Presenter extends EventEmitter {
 
     protected handlerLockPage(value: boolean) {
         if (value) this.page.querySelector('.page__wrapper').classList.add('class', 'page__wrapper_locked');
-        else this.page.querySelector('.page__wrapper').classList.remove('class', 'page__wrapper_locked');
+        else {
+            this.addressForm.clearValue();
+            this.tellAndEmailForm.clearValue();
+            this.page.querySelector('.page__wrapper').classList.remove('class', 'page__wrapper_locked');
+        }
     }
 
     protected createUserOrder(data: {inputs: HTMLInputElement[]}) {
@@ -74,6 +78,7 @@ export class Presenter extends EventEmitter {
     protected placeUserOrder() {
         this.userAPI.placeOrder(this.userOrder).then(result => {
             this.popup.setContent(this.successModal.render(result));
+            this.products.clearUserCart();
             this.popup.open();
         });
     }
@@ -81,11 +86,6 @@ export class Presenter extends EventEmitter {
     protected renderCardViewFull(product: {data: IProductFull}) {
         this.productFullModal = new CardViewFull(templates.cardPreviewTemplate, this.handlerAddInCart.bind(this))
                 .render(this.products.getProductById(product.data.id).toProductFull());
-    }
-
-    protected handlerOrderIsComplete() {
-        this.products.clearUserCart();
-        this.popup.close();
     }
 
     protected handlerPickUpProduct(itemID: {id: string}) {
@@ -153,7 +153,7 @@ export class Presenter extends EventEmitter {
         this.addressForm.on('pay', (data: {inputs: HTMLInputElement[]}) => this.handlerFormAddress(data));
         this.addressForm.on('changePayMethod', (data: {method: string}) => this.handlerChangePayMethod(data));
         this.tellAndEmailForm.on('pay', (data: {inputs: HTMLInputElement[]}) => this.handlerFormTellAndEmail(data));
-        this.successModal.on('order_complete', () => this.handlerOrderIsComplete());
+        this.successModal.on('order_complete', () => this.popup.close());
 
 
         this.popup.on('popupOpened', () => this.handlerLockPage(true));

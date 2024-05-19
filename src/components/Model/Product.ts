@@ -88,6 +88,9 @@ export class ProductList extends EventEmitter {
     }
 
     clearUserCart() {
+        this.items.forEach(item => {
+            if (item.productIsBasket) item.productIsBasket = false;
+        })
         this.items = this.items.filter(item => item.productIsBasket == false);
         this.emit('basketUpdate');
     }
